@@ -501,6 +501,48 @@ public class NoMADSession: NSObject {
         return myResult
     }
     
+    func getLDAPInformation1( _ attributes: [String], baseSearch: Bool=false, searchTerm: String="", test: Bool=true, overrideDefaultNamingContext: Bool=false) throws -> [[String:String]] {
+        
+        let command = "/usr/bin/ldapsearch"
+        var arguments: [String] = [String]()
+        arguments.append("-N")
+        if anonymous {
+            arguments.append("-x")
+        } else {
+            arguments.append("-Q")
+        }
+        arguments.append("-LLL")
+        arguments.append("-o")
+        arguments.append("nettimeout=1")
+        arguments.append("-o")
+        arguments.append("ldif-wrap=no")
+        if baseSearch {
+            arguments.append("-s")
+            arguments.append("base")
+        }
+        if maxSSF != "" {
+            arguments.append("-O")
+            arguments.append("maxssf=0")
+        }
+        arguments.append("-H")
+        arguments.append(URIPrefix + self.currentServer)
+        arguments.append("-b")
+        arguments.append(self.defaultNamingContext)
+        if ( searchTerm != "") {
+            arguments.append(searchTerm)
+        }
+        arguments.append(contentsOf: attributes)
+        let ldapResult = cliTask1(command, arguments: arguments)
+        
+        if (ldapResult.contains("GSSAPI Error") || ldapResult.contains("Can't contact")) {
+            throw NoMADSessionError.StateError
+        }
+        
+        let myResult = cleanLDIF(ldapResult)
+        
+        return myResult
+    }
+    
     fileprivate func cleanGroups(_ groupsTemp: String?, _ groups: inout [String]) {
         // clean up groups
 
@@ -624,7 +666,7 @@ public class NoMADSession: NSObject {
             
             let searchTerm = "sAMAccountName=" + userPrincipalShort
             
-            if let ldifResult = try? getLDAPInformation(attributes, searchTerm: searchTerm) {
+            if let ldifResult = try? getLDAPInformation1(attributes, searchTerm: searchTerm) {
                 let ldapResult = getAttributesForSingleRecordFromCleanedLDIF(attributes, ldif: ldifResult)
                 let passwordSetDate = ldapResult["pwdLastSet"]
                 let computedExpireDateRaw = ldapResult["msDS-UserPasswordExpiryTimeComputed"]
