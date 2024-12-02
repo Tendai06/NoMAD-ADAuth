@@ -751,10 +751,10 @@ public class NoMADSession: NSObject {
                 // If
                 if attributeValue.hasPrefix("<") {
                     // url
-                    attributeValue = attributeValue.substring(from: attributeValue.index(after: attributeValue.startIndex)).trim()
+                    attributeValue = String(attributeValue[attributeValue.index(after: attributeValue.startIndex)...]).trimmingCharacters(in: .whitespacesAndNewlines)
                 } else if attributeValue.hasPrefix(":") {
                     // base64
-                    let tempAttributeValue = attributeValue.substring(from: attributeValue.index(after: attributeValue.startIndex)).trim()
+                   let tempAttributeValue = attributeValue.dropFirst().trimmingCharacters(in: .whitespacesAndNewlines)
                     if (Data(base64Encoded: tempAttributeValue, options: NSData.Base64DecodingOptions.init(rawValue: 0)) != nil) {
                         //attributeValue = tempAttributeValue
                         
