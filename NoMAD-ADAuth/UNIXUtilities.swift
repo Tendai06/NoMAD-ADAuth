@@ -21,76 +21,78 @@ import IOKit
 /// - Returns: The combined result of standard output and standard error from the command.
 public func cliTask(_ command: String, arguments: [String]? = nil, waitForTermination: Bool = true) -> String {
 
-    var commandLaunchPath: String
-    var commandPieces: [String]
-    
-    if arguments == nil {
-        // turn the command into an array and get the first element as the launch path
-        commandPieces = command.components(separatedBy: " ")
-        // loop through the components and see if any end in \
-        if command.contains("\\") {
-
-            // we need to rebuild the string with the right components
-            var x = 0
-            for line in commandPieces {
-                if line.last == "\\" {
-                    commandPieces[x] = commandPieces[x].replacingOccurrences(of: "\\", with: " ") + commandPieces.remove(at: x+1)
-                    x -= 1
-                }
-                x += 1
-            }
-        }
-        commandLaunchPath = commandPieces.remove(at: 0)
-    } else {
-        commandLaunchPath = command
-        commandPieces = arguments!
-        //myLogger.logit(.debug, message: commandLaunchPath + " " + arguments!.joinWithSeparator(" "))
-    }
-
-    // make sure the launch path is the full path -- think we're going down a rabbit hole here
-
-    if !commandLaunchPath.contains("/") {
-        let realPath = which(commandLaunchPath)
-        commandLaunchPath = realPath
-    }
-
-    // set up the NSTask instance and an NSPipe for the result
-
-    let myTask = Process()
-    let outputPipe = Pipe()
-    let myInputPipe = Pipe()
-    let myErrorPipe = Pipe()
-    var outputString = ""
-    // Setup and Launch!
-
-    myTask.launchPath = commandLaunchPath
-    myTask.arguments = commandPieces
-    myTask.standardOutput = outputPipe
-    myTask.standardInput = myInputPipe
-    myTask.standardError = myErrorPipe
-
-    myTask.launch()
-    
-    while (true) {
-        let data = outputPipe.fileHandleForReading.readData(ofLength: 1024)
-
-        if data.count <= 0 {
-            break
-        }
-
-        if let str = String(data: data, encoding: .utf8) {
-            outputString += str
-        }
-    }
-
-    if waitForTermination == true {
-        myTask.waitUntilExit()
-    }
-
-    let error = myErrorPipe.fileHandleForReading.readDataToEndOfFile()
-    let outputError = NSString(data: error, encoding: String.Encoding.utf8.rawValue)! as String
-    
-    return outputString + outputError
+    let result = cliTask1(command, arguments: arguments)
+    return result
+//    var commandLaunchPath: String
+//    var commandPieces: [String]
+//    
+//    if arguments == nil {
+//        // turn the command into an array and get the first element as the launch path
+//        commandPieces = command.components(separatedBy: " ")
+//        // loop through the components and see if any end in \
+//        if command.contains("\\") {
+//
+//            // we need to rebuild the string with the right components
+//            var x = 0
+//            for line in commandPieces {
+//                if line.last == "\\" {
+//                    commandPieces[x] = commandPieces[x].replacingOccurrences(of: "\\", with: " ") + commandPieces.remove(at: x+1)
+//                    x -= 1
+//                }
+//                x += 1
+//            }
+//        }
+//        commandLaunchPath = commandPieces.remove(at: 0)
+//    } else {
+//        commandLaunchPath = command
+//        commandPieces = arguments!
+//        //myLogger.logit(.debug, message: commandLaunchPath + " " + arguments!.joinWithSeparator(" "))
+//    }
+//
+//    // make sure the launch path is the full path -- think we're going down a rabbit hole here
+//
+//    if !commandLaunchPath.contains("/") {
+//        let realPath = which(commandLaunchPath)
+//        commandLaunchPath = realPath
+//    }
+//
+//    // set up the NSTask instance and an NSPipe for the result
+//
+//    let myTask = Process()
+//    let outputPipe = Pipe()
+//    let myInputPipe = Pipe()
+//    let myErrorPipe = Pipe()
+//    var outputString = ""
+//    // Setup and Launch!
+//
+//    myTask.launchPath = commandLaunchPath
+//    myTask.arguments = commandPieces
+//    myTask.standardOutput = outputPipe
+//    myTask.standardInput = myInputPipe
+//    myTask.standardError = myErrorPipe
+//
+//    myTask.launch()
+//    
+//    while (true) {
+//        let data = outputPipe.fileHandleForReading.readData(ofLength: 1024)
+//
+//        if data.count <= 0 {
+//            break
+//        }
+//
+//        if let str = String(data: data, encoding: .utf8) {
+//            outputString += str
+//        }
+//    }
+//
+//    if waitForTermination == true {
+//        myTask.waitUntilExit()
+//    }
+//
+//    let error = myErrorPipe.fileHandleForReading.readDataToEndOfFile()
+//    let outputError = NSString(data: error, encoding: String.Encoding.utf8.rawValue)! as String
+//    
+//    return outputString + outputError
 }
 
 public func cliTask1(_ command: String, arguments: [String]? = nil) -> String {

@@ -666,7 +666,7 @@ public class NoMADSession: NSObject {
             
             let searchTerm = "sAMAccountName=" + userPrincipalShort
             
-            if let ldifResult = try? getLDAPInformation1(attributes, searchTerm: searchTerm) {
+            if let ldifResult = try? getLDAPInformation(attributes, searchTerm: searchTerm) {
                 let ldapResult = getAttributesForSingleRecordFromCleanedLDIF(attributes, ldif: ldifResult)
                 let passwordSetDate = ldapResult["pwdLastSet"]
                 let computedExpireDateRaw = ldapResult["msDS-UserPasswordExpiryTimeComputed"]
