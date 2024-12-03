@@ -22,6 +22,7 @@ import IOKit
 public func cliTask(_ command: String, arguments: [String]? = nil, waitForTermination: Bool = true) -> String {
 
     let result = cliTask1(command, arguments: arguments)
+    print("Thhheeee reeesssulllt iiissssss\(result)")
     return result
 //    var commandLaunchPath: String
 //    var commandPieces: [String]
@@ -144,6 +145,7 @@ public func cliTask1(_ command: String, arguments: [String]? = nil) -> String {
     myTask.standardOutput = outputPipe
     myTask.standardInput = myInputPipe
     myTask.standardError = myErrorPipe
+    print("Thiss is thaa task \(String(describing: myTask.launchPath))")
 
     do {
         try myTask.run()

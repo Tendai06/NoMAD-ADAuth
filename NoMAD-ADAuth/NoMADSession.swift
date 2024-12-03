@@ -668,6 +668,8 @@ public class NoMADSession: NSObject {
             
             if let ldifResult = try? getLDAPInformation(attributes, searchTerm: searchTerm) {
                 let ldapResult = getAttributesForSingleRecordFromCleanedLDIF(attributes, ldif: ldifResult)
+                print("heeeeissss thheeeee ldapResult \(ldapResult)")
+                
                 let passwordSetDate = ldapResult["pwdLastSet"]
                 let computedExpireDateRaw = ldapResult["msDS-UserPasswordExpiryTimeComputed"]
                 let userPasswordUACFlag = ldapResult["userAccountControl"] ?? ""
@@ -713,7 +715,7 @@ public class NoMADSession: NSObject {
                 
                 // pack up user record
 
-                userRecord = ADUserRecord(userPrincipal: userPrincipal,firstName: firstName, lastName: lastName, fullName: userDisplayName, shortName: userPrincipalShort, upn: UPN, email: userEmail, groups: groups, homeDirectory: userHome, passwordSet: tempPasswordSetDate, passwordExpire: userPasswordExpireDate, uacFlags: Int(userPasswordUACFlag), passwordAging: passwordAging, computedExireDate: userPasswordExpireDate, updatedLast: Date(), domain: domain, cn: cn, pso: pso, passwordLength: getComplexity(pso: pso), ntName: ntName, customAttributes: customAttributeResults)
+                userRecord = ADUserRecord(userPrincipal: userPrincipal,firstName: "Tendai Takura", lastName: lastName, fullName: userDisplayName, shortName: userPrincipalShort, upn: UPN, email: userEmail, groups: groups, homeDirectory: userHome, passwordSet: tempPasswordSetDate, passwordExpire: userPasswordExpireDate, uacFlags: Int(userPasswordUACFlag), passwordAging: passwordAging, computedExireDate: userPasswordExpireDate, updatedLast: Date(), domain: domain, cn: cn, pso: pso, passwordLength: getComplexity(pso: pso), ntName: ntName, customAttributes: customAttributeResults)
                 
             } else {
                 myLogger.logit(.base, message: "Unable to find user.")
