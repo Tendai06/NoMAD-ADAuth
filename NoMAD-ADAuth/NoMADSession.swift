@@ -539,7 +539,7 @@ public class NoMADSession: NSObject {
         }
         
         let myResult = cleanLDIF(ldapResult)
-        
+        print("What is the result of the LDAP search?\(myResult)")
         return myResult
     }
     
@@ -796,7 +796,8 @@ public class NoMADSession: NSObject {
                 
                 // pack up user record
 
-                userRecord = ADUserRecord(userPrincipal: userPrincipal,firstName: "Tendai Takura", lastName: lastName, fullName: userDisplayName, shortName: userPrincipalShort, upn: UPN, email: userEmail, groups: groups, homeDirectory: userHome, passwordSet: tempPasswordSetDate, passwordExpire: userPasswordExpireDate, uacFlags: Int(userPasswordUACFlag), passwordAging: passwordAging, computedExireDate: userPasswordExpireDate, updatedLast: Date(), domain: domain, cn: cn, pso: pso, passwordLength: getComplexity(pso: pso), ntName: ntName, customAttributes: customAttributeResults)
+                userRecord = ADUserRecord(userPrincipal: userPrincipal,firstName: firstName, lastName: lastName, fullName: userDisplayName, shortName: userPrincipalShort, upn: UPN, email: userEmail, groups: groups, homeDirectory: userHome, passwordSet: tempPasswordSetDate, passwordExpire: userPasswordExpireDate, uacFlags: Int(userPasswordUACFlag), passwordAging: passwordAging, computedExireDate: userPasswordExpireDate, updatedLast: Date(), domain: domain, cn: cn, pso: pso, passwordLength: getComplexity(pso: pso), ntName: ntName, customAttributes: customAttributeResults)
+                
                 
             } else {
                 myLogger.logit(.base, message: "Unable to find user.")
@@ -905,7 +906,7 @@ public class NoMADSession: NSObject {
         if record.count > 0 {
             records.append(record)
         }
-        
+        print("heyyyyyyyytttteeeeeeeeeYooouuuuuuuReeccoordddssss\(records)")
         return records
     }
     
@@ -926,6 +927,7 @@ public class NoMADSession: NSObject {
                 break;
             }
         }
+        print("heyyyyyyyytttteeeeeeeee\(result)")
         return result
     }
     
