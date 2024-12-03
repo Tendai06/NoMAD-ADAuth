@@ -646,6 +646,87 @@ public class NoMADSession: NSObject {
         }
     }
     
+    func getKerbUserInformation() {
+        var passwordAging = true
+        var tempPasswordSetDate = Date()
+        var serverPasswordExpirationDefault = 0.0
+        var userPasswordExpireDate = Date()
+        var groups = [String]()
+        var userHome = ""
+        
+        if ldaptype == .AD {
+            var attributes = ["pwdLastSet", "msDS-UserPasswordExpiryTimeComputed", "userAccountControl", "homeDirectory", "displayName", "memberOf", "mail", "userPrincipalName", "dn", "givenName", "sn", "cn", "msDS-ResultantPSO", "msDS-PrincipalName"] // passwordSetDate, computedExpireDateRaw, userPasswordUACFlag, userHomeTemp, userDisplayName, groupTemp
+            
+            if customAttributes?.count ?? 0 > 0 {
+                attributes.append(contentsOf: customAttributes!)
+            }
+            
+            let searchTerm = "sAMAccountName=" + userPrincipalShort
+            
+            do {
+                let ldifResult = try getLDAPInformation(attributes, searchTerm: searchTerm)
+                let ldapResult = getAttributesForSingleRecordFromCleanedLDIF(attributes, ldif: ldifResult)
+                print("heeeeissss thheeeee ldapResult \(ldapResult)")
+                
+                let passwordSetDate = ldapResult["pwdLastSet"]
+                let computedExpireDateRaw = ldapResult["msDS-UserPasswordExpiryTimeComputed"]
+                let userPasswordUACFlag = ldapResult["userAccountControl"] ?? ""
+                let userHomeTemp = ldapResult["homeDirectory"] ?? ""
+                let userDisplayName = ldapResult["displayName"] ?? ""
+                let firstName = ldapResult["givenName"] ?? ""
+                let lastName = ldapResult["sn"] ?? ""
+                var groupsTemp = ldapResult["memberOf"]
+                let userEmail = ldapResult["mail"] ?? ""
+                let UPN = ldapResult["userPrincipalName"] ?? ""
+                let dn = ldapResult["dn"] ?? ""
+                let cn = ldapResult["cn"] ?? ""
+                let pso = ldapResult["msDS-ResultantPSO"] ?? ""
+                let ntName = ldapResult["msDS-PrincipalName"] ?? ""
+                
+                var customAttributeResults : [String:Any]?
+                
+                if customAttributes?.count ?? 0 > 0 {
+                    var tempCustomAttr = [String:Any]()
+                    for key in customAttributes! {
+                        tempCustomAttr[key] = ldapResult[key] ?? ""
+                    }
+                    customAttributeResults = tempCustomAttr
+                }
+                
+                if ldapResult.count == 0 {
+                    // we didn't get a result
+                }
+                
+                lookupRecursiveGroups(dn, &groupsTemp)
+                
+                if (passwordSetDate != "") && (passwordSetDate != nil ) {
+                    tempPasswordSetDate = NSDate(timeIntervalSince1970: (Double(passwordSetDate!)!)/10000000-11644473600) as Date
+                }
+                parseExpirationDate(computedExpireDateRaw, &passwordAging, &userPasswordExpireDate, userPasswordUACFlag, &serverPasswordExpirationDefault, tempPasswordSetDate)
+                
+                cleanGroups(groupsTemp, &groups)
+                
+                // clean up the home
+                
+                userHome = userHomeTemp.replacingOccurrences(of: "\\", with: "/")
+                userHome = userHome.replacingOccurrences(of: " ", with: "%20")
+                
+                // pack up user record
+
+                userRecord = ADUserRecord(userPrincipal: userPrincipal,firstName: firstName, lastName: lastName, fullName: userDisplayName, shortName: userPrincipalShort, upn: UPN, email: userEmail, groups: groups, homeDirectory: userHome, passwordSet: tempPasswordSetDate, passwordExpire: userPasswordExpireDate, uacFlags: Int(userPasswordUACFlag), passwordAging: passwordAging, computedExireDate: userPasswordExpireDate, updatedLast: Date(), domain: domain, cn: cn, pso: pso, passwordLength: getComplexity(pso: pso), ntName: ntName, customAttributes: customAttributeResults)
+            } catch {
+                myLogger.logit(.base, message: "Unable to find user.")
+            }
+        } else {
+            let attributes = [ "homeDirectory", "displayName", "memberOf", "mail", "uid"] // passwordSetDate, computedExpireDateRaw, userPasswordUACFlag, userHomeTemp, userDisplayName, groupTemp
+            // "maxPwdAge" // passwordExpirationLength
+            
+            let searchTerm = "uid=" + userPrincipalShort
+            
+            extractedFunc(attributes, searchTerm)
+        }
+    }
+    
     func getUserInformation() {
         
         // some setup
@@ -1173,7 +1254,8 @@ extension NoMADSession: NoMADUserSession {
     }
 
     private func shareKerberosResult(completion: (KerberosTicketResult) -> Void) {
-        getUserInformation()
+        //getUserInformation()
+        getKerbUserInformation()
         let result: KerberosTicketResult
         if let userRecord = userRecord {
             result = .success(userRecord)
@@ -1339,7 +1421,8 @@ extension NoMADSession: NoMADUserSession {
             siteManager.sites[domain] = hosts
         }
 
-        getUserInformation()
+        //getUserInformation()
+        getKerbUserInformation()
         // return the userRecord unless we came back empty
         if userRecord != nil {
             delegate?.NoMADUserInformation(user: userRecord!)

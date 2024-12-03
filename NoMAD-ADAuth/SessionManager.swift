@@ -54,7 +54,7 @@ public class SessionManager: NoMADUserSessionDelegate {
         }
         
         sessions[user]?.session.delegate = self
-        sessions[user]?.session.getUserInformation()
+        sessions[user]?.session.getKerbUserInformation()
         
     }
     
@@ -69,7 +69,7 @@ public class SessionManager: NoMADUserSessionDelegate {
         
         for session in sessions {
             session.value.session.delegate = self
-            session.value.session.getUserInformation()
+            session.value.session.getKerbUserInformation()
         }
         
     }
@@ -110,7 +110,7 @@ public class SessionManager: NoMADUserSessionDelegate {
             // update the information
 
             session.delegate = self
-            session.getUserInformation()
+            session/*.getUserInformation()*/.getKerbUserInformation()
         }
         
     }
